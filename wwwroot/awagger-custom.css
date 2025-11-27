@@ -1,0 +1,279 @@
+﻿/* ==========================================
+   URBAN BARBER API - SWAGGER CUSTOM STYLES
+   ========================================== */
+
+/* Tema principal */
+body {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+/* Header personalizado */
+.swagger-ui .topbar {
+    background: linear-gradient(135deg, #c59a2f 0%, #d4af37 100%);
+    border-bottom: 3px solid #b8922c;
+    padding: 15px 0;
+}
+
+    .swagger-ui .topbar .download-url-wrapper {
+        display: none;
+    }
+
+/* Logo y título */
+.swagger-ui .info .title {
+    color: #c59a2f;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+    .swagger-ui .info .title::before {
+        content: "💈 ";
+    }
+
+.swagger-ui .info .description {
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Secciones de operaciones */
+.swagger-ui .opblock-tag {
+    border-bottom: 2px solid #c59a2f;
+    background: rgba(197, 154, 47, 0.1);
+}
+
+    .swagger-ui .opblock-tag:hover {
+        background: rgba(197, 154, 47, 0.2);
+    }
+
+/* Botones de métodos HTTP */
+.swagger-ui .opblock.opblock-post {
+    border-color: #49cc90;
+    background: rgba(73, 204, 144, 0.1);
+}
+
+.swagger-ui .opblock.opblock-get {
+    border-color: #61affe;
+    background: rgba(97, 175, 254, 0.1);
+}
+
+.swagger-ui .opblock.opblock-put {
+    border-color: #fca130;
+    background: rgba(252, 161, 48, 0.1);
+}
+
+.swagger-ui .opblock.opblock-delete {
+    border-color: #f93e3e;
+    background: rgba(249, 62, 62, 0.1);
+}
+
+/* Botón "Try it out" */
+.swagger-ui .btn.try-out__btn {
+    background: #c59a2f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .swagger-ui .btn.try-out__btn:hover {
+        background: #d4af37;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(197, 154, 47, 0.4);
+    }
+
+/* Botón "Execute" */
+.swagger-ui .btn.execute {
+    background: linear-gradient(135deg, #c59a2f 0%, #d4af37 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+}
+
+    .swagger-ui .btn.execute:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(197, 154, 47, 0.5);
+    }
+
+/* Botón "Authorize" */
+.swagger-ui .btn.authorize {
+    background: #c59a2f;
+    color: white;
+    border-color: #c59a2f;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .swagger-ui .btn.authorize:hover {
+        background: #d4af37;
+        border-color: #d4af37;
+        transform: translateY(-2px);
+    }
+
+    .swagger-ui .btn.authorize svg {
+        fill: white;
+    }
+
+/* Modal de autorización */
+.swagger-ui .dialog-ux .modal-ux {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.swagger-ui .dialog-ux .modal-ux-content {
+    background: #2d2d2d;
+    border: 2px solid #c59a2f;
+    border-radius: 12px;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header {
+    background: linear-gradient(135deg, #c59a2f 0%, #d4af37 100%);
+    color: white;
+    border-bottom: 2px solid #b8922c;
+}
+
+/* Respuestas */
+.swagger-ui .responses-inner h4,
+.swagger-ui .responses-inner h5 {
+    color: #c59a2f;
+}
+
+.swagger-ui .response-col_status {
+    color: #49cc90;
+    font-weight: bold;
+}
+
+/* Código de respuesta */
+.swagger-ui .highlight-code {
+    background: #1a1a1a;
+    border: 1px solid #c59a2f;
+    border-radius: 6px;
+}
+
+    .swagger-ui .highlight-code .microlight {
+        color: #e0e0e0;
+    }
+
+/* Parámetros */
+.swagger-ui table thead tr th {
+    background: rgba(197, 154, 47, 0.2);
+    color: #c59a2f;
+    border-color: #c59a2f;
+}
+
+.swagger-ui .parameter__name {
+    color: #c59a2f;
+    font-weight: 600;
+}
+
+.swagger-ui .parameter__type {
+    color: #61affe;
+}
+
+/* Esquemas/Models */
+.swagger-ui .model-title {
+    color: #c59a2f;
+    font-weight: bold;
+}
+
+.swagger-ui .model-box {
+    background: rgba(197, 154, 47, 0.05);
+    border: 1px solid rgba(197, 154, 47, 0.3);
+    border-radius: 6px;
+}
+
+/* Inputs */
+.swagger-ui input[type=text],
+.swagger-ui textarea,
+.swagger-ui select {
+    background: #2d2d2d;
+    border: 2px solid #444;
+    color: #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+    .swagger-ui input[type=text]:focus,
+    .swagger-ui textarea:focus,
+    .swagger-ui select:focus {
+        border-color: #c59a2f;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(197, 154, 47, 0.2);
+    }
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c59a2f;
+    border-radius: 6px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #d4af37;
+    }
+
+/* Loading spinner */
+.swagger-ui .loading-container {
+    color: #c59a2f;
+}
+
+/* Links */
+.swagger-ui a {
+    color: #c59a2f;
+    transition: all 0.3s ease;
+}
+
+    .swagger-ui a:hover {
+        color: #d4af37;
+    }
+
+/* Badge de versión */
+.swagger-ui .info .version {
+    background: #c59a2f;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* Animación de carga */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.swagger-ui .opblock {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Mensaje personalizado */
+.swagger-ui .info::after {
+    content: "🔐 Usa el botón 'Authorize' arriba para autenticarte con JWT";
+    display: block;
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(197, 154, 47, 0.1);
+    border-left: 4px solid #c59a2f;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    font-weight: 500;
+}

@@ -10,7 +10,6 @@ namespace UrbanBarberAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class CitasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -20,8 +19,13 @@ namespace UrbanBarberAPI.Controllers
             _context = context;
         }
 
-        // GET: api/citas (Obtener citas del usuario autenticado)
+        /// <summary>
+        /// Obtiene todas las citas del usuario autenticado (o todas si es admin)
+        /// </summary>
+        [Authorize]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetMisCitas()
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -32,7 +36,6 @@ namespace UrbanBarberAPI.Controllers
                 .Include(c => c.Servicio)
                 .Include(c => c.Usuario);
 
-            // Si es admin, mostrar todas las citas
             if (userRole != "admin")
             {
                 query = query.Where(c => c.UsuarioId == userId);
@@ -74,8 +77,14 @@ namespace UrbanBarberAPI.Controllers
             return Ok(citas);
         }
 
-        // GET: api/citas/5
+        /// <summary>
+        /// Obtiene una cita específica por ID
+        /// </summary>
+        [Authorize]
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetCita(int id)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -93,7 +102,6 @@ namespace UrbanBarberAPI.Controllers
                 return NotFound(new { message = "Cita no encontrada" });
             }
 
-            // Verificar que el usuario sea dueño de la cita o sea admin
             if (cita.UsuarioId != userId && userRole != "admin")
             {
                 return Forbid();
@@ -123,12 +131,15 @@ namespace UrbanBarberAPI.Controllers
             });
         }
 
-        // POST: api/citas
+        /// <summary>
+        /// Crea una nueva cita (NO requiere autenticación)
+        /// </summary>
+        [AllowAnonymous]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateCita([FromBody] CitaCreateDto citaDto)
         {
-            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             // Validar que el barbero existe
             var barbero = await _context.Barberos.FindAsync(citaDto.BarberoId);
             if (barbero == null || !barbero.Disponible)
@@ -149,16 +160,50 @@ namespace UrbanBarberAPI.Controllers
                 return BadRequest(new { message = "La fecha no puede ser anterior a hoy" });
             }
 
-            // Validar horario de atención (7:00 AM - 10:00 PM)
+            // Validar horario de atención
             if (citaDto.Hora.Hours < 7 || citaDto.Hora.Hours >= 22)
             {
                 return BadRequest(new { message = "El horario de atención es de 7:00 AM a 10:00 PM" });
             }
 
+            int usuarioId;
+
+            // Si viene un UsuarioId, usarlo (usuario autenticado)
+            if (citaDto.UsuarioId.HasValue && citaDto.UsuarioId.Value > 0)
+            {
+                usuarioId = citaDto.UsuarioId.Value;
+            }
+            else
+            {
+                // Validar que vengan los datos necesarios para crear usuario temporal
+                if (string.IsNullOrWhiteSpace(citaDto.Nombre) ||
+                    string.IsNullOrWhiteSpace(citaDto.Celular))
+                {
+                    return BadRequest(new { message = "Debe proporcionar nombre y celular" });
+                }
+
+                // Crear usuario temporal para citas sin autenticación
+                var usuarioTemp = new Usuario
+                {
+                    Username = $"temp_{citaDto.Nombre.Replace(" ", "")}_{DateTime.UtcNow.Ticks}",
+                    Nombre = citaDto.Nombre,
+                    Apellido = "Temporal",
+                    Correo = citaDto.Correo ?? $"temp{DateTime.UtcNow.Ticks}@temp.com",
+                    Celular = citaDto.Celular,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("temp123"),
+                    Rol = "cliente",
+                    FechaRegistro = DateTime.UtcNow
+                };
+
+                _context.Usuarios.Add(usuarioTemp);
+                await _context.SaveChangesAsync();
+                usuarioId = usuarioTemp.Id;
+            }
+
             // Crear la cita
             var nuevaCita = new Cita
             {
-                UsuarioId = userId,
+                UsuarioId = usuarioId,
                 BarberoId = citaDto.BarberoId,
                 ServicioId = citaDto.ServicioId,
                 Fecha = citaDto.Fecha,
@@ -176,15 +221,21 @@ namespace UrbanBarberAPI.Controllers
             servicio.Popularidad++;
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCita), new { id = nuevaCita.Id }, new
+            return Ok(new
             {
                 message = "Cita creada exitosamente",
                 citaId = nuevaCita.Id
             });
         }
 
-        // DELETE: api/citas/5
+        /// <summary>
+        /// Elimina una cita existente
+        /// </summary>
+        [Authorize]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteCita(int id)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -197,7 +248,6 @@ namespace UrbanBarberAPI.Controllers
                 return NotFound(new { message = "Cita no encontrada" });
             }
 
-            // Verificar que el usuario sea dueño de la cita o sea admin
             if (cita.UsuarioId != userId && userRole != "admin")
             {
                 return Forbid();
@@ -209,8 +259,14 @@ namespace UrbanBarberAPI.Controllers
             return Ok(new { message = "Cita eliminada exitosamente" });
         }
 
-        // PUT: api/citas/5/pagar
+        /// <summary>
+        /// Marca una cita como pagada
+        /// </summary>
+        [Authorize]
         [HttpPut("{id}/pagar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MarcarComoPagada(int id)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -223,7 +279,6 @@ namespace UrbanBarberAPI.Controllers
                 return NotFound(new { message = "Cita no encontrada" });
             }
 
-            // Verificar que el usuario sea dueño de la cita o sea admin
             if (cita.UsuarioId != userId && userRole != "admin")
             {
                 return Forbid();
