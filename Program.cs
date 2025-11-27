@@ -2,42 +2,27 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
 using System.Text;
 using UrbanBarberAPI.Data;
 using UrbanBarberAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// SERVICIOS BÁSICOS
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ==========================================
-// CONFIGURACIÓN PROFESIONAL DE SWAGGER
-// ==========================================
+// SWAGGER - CONFIGURACIÓN SIMPLIFICADA
 builder.Services.AddSwaggerGen(options =>
 {
-    // Información general de la API
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
         Title = "Urban Barber API",
-        Description = "API REST para sistema de gestión de barbería - Urban Barber",
-        Contact = new OpenApiContact
-        {
-            Name = "Urban Barber Dev Team",
-            Email = "dev@urbanbarber.com",
-            Url = new Uri("https://urbanbarber.com")
-        },
-        License = new OpenApiLicense
-        {
-            Name = "MIT License",
-            Url = new Uri("https://opensource.org/licenses/MIT")
-        }
+        Description = "API REST para sistema de gestión de barbería"
     });
 
-    // Configurar JWT en Swagger
+    // JWT en Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -45,8 +30,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresa 'Bearer' [espacio] y luego tu token JWT.\n\n" +
-                      "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        Description = "Ingresa 'Bearer' [espacio] y tu token JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -63,27 +47,16 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
-
-    // Habilitar comentarios XML para documentación
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        options.IncludeXmlComments(xmlPath);
-    }
-
-    // Ordenar endpoints por nombre
-    options.OrderActionsBy(apiDesc => apiDesc.RelativePath);
 });
 
-// Configurar DbContext con SQL Server
+// BASE DE DATOS
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Registrar servicios
+// SERVICIOS DE AUTENTICACIÓN
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Configurar JWT Authentication
+// JWT AUTHENTICATION
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -103,7 +76,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Configurar CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -116,31 +89,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// MIDDLEWARE PIPELINE
+
+// SIEMPRE mostrar Swagger (no solo en Development)
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Urban Barber API v1");
-        options.RoutePrefix = string.Empty; // Swagger en la raíz (http://localhost:5294/)
-
-        // Configuración de UI
-        options.DocumentTitle = "Urban Barber API - Documentación";
-        options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
-        options.DefaultModelsExpandDepth(2);
-        options.DisplayRequestDuration();
-        options.EnableDeepLinking();
-        options.EnableFilter();
-        options.ShowExtensions();
-
-        // Tema oscuro y personalización
-        options.InjectStylesheet("/swagger-custom.css");
-    });
-}
-
-// Middleware para CSS personalizado de Swagger
-app.UseStaticFiles();
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Urban Barber API v1");
+    options.RoutePrefix = string.Empty; // Swagger en la raíz
+    options.DocumentTitle = "Urban Barber API";
+});
 
 app.UseCors("AllowAll");
 
@@ -148,15 +106,16 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
-// Mensaje de bienvenida en consola
-Console.WriteLine("========================================");
-Console.WriteLine("🚀 Urban Barber API - Iniciada");
-Console.WriteLine("========================================");
-Console.WriteLine($"📍 Swagger UI: http://localhost:5294/");
-Console.WriteLine($"📍 API Base: http://localhost:5294/api/");
-Console.WriteLine("========================================");
-
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("\n❌ ERROR AL INICIAR LA API:");
+    Console.WriteLine(ex.Message);
+    Console.WriteLine(ex.StackTrace);
+    throw;
+}
